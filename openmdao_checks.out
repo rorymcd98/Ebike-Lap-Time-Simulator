@@ -1,8 +1,6 @@
 INFO: checking out_of_order
 INFO: checking system
 INFO: checking solvers
-WARNING: Group 'traj.phases.phase0.rhs_disc' contains cycles [['implicitOutputs', 'spin']], but does not have an iterative nonlinear solver.
-WARNING: Group 'traj.phases.phase0.rhs_col' contains cycles [['implicitOutputs', 'spin']], but does not have an iterative nonlinear solver.
 INFO: checking dup_inputs
 INFO: checking missing_recorders
 WARNING: The Problem has no recorder of any kind attached

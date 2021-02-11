@@ -63,7 +63,6 @@ class spin(om.ExplicitComponent):
         sdot = inputs['sdot']
         Omega_z = inputs['Omega_z']
         Omegadot_z = inputs['Omegadot_z']
-        omega_w = inputs['omega_w']
         Fx = inputs['Fx']
         tau_w = inputs['tau_w']
         mu_r = inputs['mu_r']

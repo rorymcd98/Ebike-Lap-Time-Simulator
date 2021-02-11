@@ -13,16 +13,8 @@ class yEquation(om.ImplicitComponent):
         self.add_input('g', val=9.81, desc='gravity', units='m/s**2')
         self.add_input('rho', val=1.2, desc='air density', units='kg/m**3')
         self.add_input('Cl', val=0.03, desc='lift coefficient', units=None)
-        self.add_input('Cd', val=0.41, desc='drag coefficient', units=None)
         self.add_input('rt', val=0.1, desc='wheel toroid radius', units=None)
-        self.add_input('r', val=0.3, desc='wheel radius', units='m')
         self.add_input('h', val=0.6, desc='CoG height', units=None)
-        self.add_input('Ixx', val=19, desc='roll moment of inertia', units='kg*m**2')
-        self.add_input('Iyy', val=5, desc='pitch moment of inertia', units='kg*m**2') # guesses
-        self.add_input('Izz', val=5, desc='yaw moment of inertia', units='kg*m**2') #
-        self.add_input('Igy', val=2.1, desc='gyroscopic moment of inertia', units='kg*m**2')
-        self.add_input('Iwy', val=0.7, desc='wheelspin moment of inertia', units='kg*m**2')
-        self.add_input('mu_r', val=0.015, desc='tyre rolling resistance', units=None)
 
         #states
         self.add_input('Phi', val=np.zeros(nn), desc='roll', units='rad')
@@ -38,17 +30,9 @@ class yEquation(om.ImplicitComponent):
         self.add_input('V', val=np.zeros(nn), desc='forward velocity', units='m/s')
         self.add_input('Vdot', val=np.zeros(nn), desc='forward acceleration', units='m/s**2')
         self.add_input('n', val=np.zeros(nn), desc='road lateral position', units='m')
-        self.add_input('ndot', val=np.zeros(nn), desc='road lateral velocity', units='m/s')
         self.add_input('z', val=np.zeros(nn), desc='vertical displacement', units='m')
         self.add_input('zdot', val=np.zeros(nn), desc='vertical velocity', units='m/s')
-        self.add_input('zddot', val=np.zeros(nn), desc='vertical acceleration', units='m/s**2')
         self.add_input('sdot', val=np.zeros(nn), desc='road longitudinal velocity', units='m/s')
-        self.add_input('Omega_z', val=np.zeros(nn), desc='yaw rate', units='rad/s')
-        self.add_input('Omegadot_z', val=np.zeros(nn), desc='yaw rate2', units='rad/s**2')
-        self.add_input('omega_w', val=np.zeros(nn), desc='wheel spin', units='rad/s')
-        self.add_input('omegadot_w', val=np.zeros(nn), desc='wheel spin2', units='rad/s**2')
-        self.add_input('N', val=np.zeros(nn), desc='tyre load', units='N')
-        self.add_input('Fx', val=np.zeros(nn), desc='longitudinal tyre force', units='N')
         self.add_input('Fy', val=np.zeros(nn), desc='lateral tyre load', units='N')
 
         #outputs
@@ -61,16 +45,9 @@ class yEquation(om.ImplicitComponent):
         g = inputs['g']
         rho = inputs['rho']
         Cl = inputs['Cl']
-        Cd = inputs['Cd']
         rt = inputs['rt']
-        r = inputs['r']
         h = inputs['h']
-        Ixx = inputs['Ixx']
-        Iyy = inputs['Iyy']
-        Izz = inputs['Izz']
-        Igy = inputs['Igy']
-        Iwy = inputs['Iwy']
-        mu_r = inputs['mu_r']
+
 
         Phi = inputs['Phi']
         Phidot = inputs['Phidot']
@@ -85,17 +62,10 @@ class yEquation(om.ImplicitComponent):
         Vdot = inputs['Vdot']
         n = inputs['n']
         k = inputs['k']
-        ndot = inputs['ndot']
         z = inputs['z']
         zdot = inputs['zdot']
-        zddot= inputs['zddot']
         sdot = inputs['sdot']
         Omega_z = inputs['Omega_z']
-        Omegadot_z = inputs['Omegadot_z']
-        omega_w = inputs['omega_w']
-        omegadot_w = inputs['omegadot_w']
-        N = inputs['N']
-        Fx = inputs['Fx']
         Fy = inputs['Fy']
         
         Phiddot = outputs['Phiddot']
