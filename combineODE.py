@@ -39,7 +39,7 @@ class combine(om.Group):
 
         #Solve equations 13 and 14
         self.add_subsystem(name='implicitOutputs',
-                           subsys=implicitSolver(num_nodes=nn),promotes=['*'])
+                           subsys=implicitSolver(num_nodes=nn),promotes=['Vdot','Phiddot','zddot','Betadot'])
 
         self.add_subsystem(name='spin',subsys=spin(num_nodes=nn),promotes_inputs=['*'],promotes_outputs=['omegadot_w'])
 
