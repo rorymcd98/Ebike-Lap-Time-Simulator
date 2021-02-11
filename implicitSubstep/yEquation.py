@@ -52,7 +52,7 @@ class yEquation(om.ImplicitComponent):
         self.add_input('Fy', val=np.zeros(nn), desc='lateral tyre load', units='N')
 
         #outputs
-        self.add_output('Phiddot', val=np.zeros(nn), desc='', units=None)
+        self.add_output('Phiddot', val=np.zeros(nn), desc='roll rate2', units='rad/s**2')
 
         self.declare_coloring(wrt='*', method='cs', tol=1.0E-12, show_sparsity=True)
 
@@ -103,27 +103,14 @@ class yEquation(om.ImplicitComponent):
         Omega_x = sdot*(nu*np.sin(alpha)+tau*np.cos(alpha))
         Omega_y = sdot*(nu*np.cos(alpha)-tau*np.sin(alpha))
 
-        sddot = - (V*(np.sin(alpha(t))*Betadot - np.sin(alpha)*alphadot + np.cos(alpha)*Beta*alphadot))/(k*n - 1) - Vdot*(np.cos(alpha) + np.sin(alpha)*Beta)/(k*n - 1)
-        Omegadot_y = (V*(tau*np.cos(alpha)*alphadot + nu*np.sin(alpha)*alphadot)*(np.cos(alpha) + np.sin(alpha)*Beta))/(k*n - 1) - (V*(nu*np.cos(alpha) - tau*np.sin(alpha))*(np.sin(alpha)*Betadot - np.sin(alpha)*alphadot + np.cos(alpha)*Beta*alphadot))/(k*n - 1) - ((nu*np.cos(alpha) - tau*np.sin(alpha))*Vdot*(np.cos(alpha) + np.sin(alpha)*Beta))/(k*n - 1)
         Omegadot_x = - ((tau*np.cos(alpha) + nu*np.sin(alpha))*Vdot*(np.cos(alpha) + np.sin(alpha)*Beta))/(k*n - 1) - (V*(tau*np.cos(alpha) + nu*np.sin(alpha))*(np.sin(alpha)*Betadot - np.sin(alpha)*alphadot + np.cos(alpha)*Beta*alphadot))/(k*n - 1) - (V*(nu*np.cos(alpha)*alphadot - tau*np.sin(alpha)*alphadot)*(np.cos(alpha) + np.sin(alpha)*Beta))/(k*n - 1)
 
         V_x = V
-        V_y = -V*Beta
         V_z = sdot*tau*n
 
-        Vdot_x = Vdot
         Vdot_y = -Vdot*Beta-V*Betadot
-        Vdot_z = sddot*tau*n
 
         L=0.5*rho*Cl*V**2
-        D=0.5*rho*Cd*V**2
-
-        T0 = (h-rt)*(np.sin(Phi)*(zddot-Omega_y*V_x+Omega_y*V_x+Omega_x*V_y+Vdot_z -g) - np.cos(Phi)*(Vdot_y-2*Omega_x*zdot+Omega_x+V_z+g*sig*np.sin(alpha))) \
-            + (h-rt)*(rt-z)*(2*np.cos(Phi)*Omegadot_x-2*np.cos(Phi)*Omega_z*Omega_y+np.sin(Phi)*(Omega_y**2+Omega_z**2-Phidot**2-2*Omega_x*Phidot)) \
-            + (h-rt)**2*(Omegadot_x + np.sin(Phi)*np.cos(Phi)*(Omega_y**2-Omega_z**2)-2*np.cos(Phi)**2*Omega_x*Omega_y) \
-            + (z**2 -r*rt*z)*Omegadot_x + (h-z)*(h-2*rt+z)*Omega_y*Omega_z + (rt-z)*(Vdot_y-V_z*Omega_x+V_x*Omega_z-2*zdot*Omega_x - g*sig*np.sin(alpha))
-
-        tau_r = (N*np.cos(Phi)+Fy*np.sin(Phi))*mu_r
 
         residuals['Phiddot'] = M*Vdot_y + M*Phiddot*np.cos(Phi)*(h-rt) + M*((h-rt)*np.cos(Phi)+rt-z)*Omegadot_x - M*np.sin(Phi)*(h-rt)*Phidot**2 \
                         -2*M*np.sin(Phi)*Omega_x*(h-rt)*Phidot-2*M*Omega_x*zdot-M*(h-rt)*(Omega_z**2+Omega_x**2)*np.sin(Phi) \

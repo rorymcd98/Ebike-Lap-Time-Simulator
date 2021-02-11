@@ -31,9 +31,12 @@ class spin(om.ExplicitComponent):
         self.add_input('sdot', val=np.zeros(nn), desc='road longitudinal velocity', units='m/s')
         self.add_input('Omega_z', val=np.zeros(nn), desc='yaw rate', units='rad/s')
         self.add_input('Omegadot_z', val=np.zeros(nn), desc='yaw rate2', units='rad/s**2')
-        self.add_input('omegadot_w', val=np.zeros(nn), desc='wheel spin2', units='rad/s**2')
         self.add_input('Fx', val=np.zeros(nn), desc='longitudinal tyre force', units='N')
         self.add_input('mu_r', val=0.015, desc='tyre rolling resistance', units=None)
+        self.add_input('omega_w', val=np.zeros(nn), desc='wheel spin', units='rad/s')
+        self.add_input('tau_w', val=np.zeros(nn), desc='driving torque', units='N*m')
+        self.add_input('N', val=np.zeros(nn), desc='tyre load', units='N')
+        self.add_input('Fy', val=np.zeros(nn), desc='lateral tyre load', units='N')
 
         #outputs
         self.add_output('omegadot_w', val=np.zeros(nn), desc='', units=None)
@@ -61,14 +64,16 @@ class spin(om.ExplicitComponent):
         Omega_z = inputs['Omega_z']
         Omegadot_z = inputs['Omegadot_z']
         omega_w = inputs['omega_w']
-        omegadot_w = inputs['omegadot_w']
         Fx = inputs['Fx']
         tau_w = inputs['tau_w']
         mu_r = inputs['mu_r']
+        Vdot = inputs['Vdot']
+        N = inputs['N']
+        Fy = inputs['Fy']
 
         Omega_y = sdot*(nu*np.cos(alpha)-tau*np.sin(alpha))
 
-        sddot = - (V*(np.sin(alpha(t))*Betadot - np.sin(alpha)*alphadot + np.cos(alpha)*Beta*alphadot))/(k*n - 1) - Vdot*(np.cos(alpha) + np.sin(alpha)*Beta)/(k*n - 1)
+        sddot = - (V*(np.sin(alpha)*Betadot - np.sin(alpha)*alphadot + np.cos(alpha)*Beta*alphadot))/(k*n - 1) - Vdot*(np.cos(alpha) + np.sin(alpha)*Beta)/(k*n - 1)
         Omegadot_y = (V*(tau*np.cos(alpha)*alphadot + nu*np.sin(alpha)*alphadot)*(np.cos(alpha) + np.sin(alpha)*Beta))/(k*n - 1) - (V*(nu*np.cos(alpha) - tau*np.sin(alpha))*(np.sin(alpha)*Betadot - np.sin(alpha)*alphadot + np.cos(alpha)*Beta*alphadot))/(k*n - 1) - ((nu*np.cos(alpha) - tau*np.sin(alpha))*Vdot*(np.cos(alpha) + np.sin(alpha)*Beta))/(k*n - 1)        
 
         tau_r = (N*np.cos(Phi)+Fy*np.sin(Phi))*mu_r

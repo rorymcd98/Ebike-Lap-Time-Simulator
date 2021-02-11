@@ -91,7 +91,7 @@ phase.add_objective('t', loc='final') #note that we use the 'state' time instead
 #phase.add_timeseries_output('curv.kappa',units='1/m',shape=(1,))
 
 #Link the states at the start and end of the phase in order to ensure a continous lap
-traj.link_phases(phases=['phase0', 'phase0'], vars=['Phi','Phidot','n','alpha','V','Beta','z','zdot','omega_w','Omega_z','T','e'], locs=('final', 'initial'))
+#traj.link_phases(phases=['phase0', 'phase0'], vars=['Phi','Phidot','n','alpha','V','Beta','z','zdot','omega_w','Omega_z','T','e'], locs=('final', 'initial'))
 
 IPOPT = False
 
