@@ -25,7 +25,7 @@ class combine(om.Group):
         self.add_subsystem(name='powerTrain',
                            subsys=powerTrain(num_nodes=nn),promotes_inputs=['omega_w','tau_t','V'],promotes_outputs=['Tdot','edot','im'])
 
-        self.add_subsystem(name='trackingODE',
+        self.add_subsystem(name='tracking',
                            subsys=tracking(num_nodes=nn),promotes_inputs=['V','Beta','alpha','n','k','Omega_z'],promotes_outputs=['sdot','ndot','alphadot'])
 
         self.add_subsystem(name='tyre',
