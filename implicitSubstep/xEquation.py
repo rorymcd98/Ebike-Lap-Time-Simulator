@@ -38,11 +38,11 @@ class xEquation(om.ImplicitComponent):
         self.add_input('Fx', val=np.zeros(nn), desc='longitudinal tyre force', units='N')
         
         #outputs
-        self.add_output('Vdot', val=np.ones(nn), desc='forward acceleration', units='m/s**2')
+        self.add_output('Vdot', val=np.ones(nn), desc='forward acceleration', units='m/s**2', lower = -4, upper = 4)
 
         self.declare_coloring(wrt='*', method='cs', tol=1.0E-12, show_sparsity=True)
 
-    def compute(self, inputs, outputs):
+    def apply_nonlinear(self, inputs, outputs, residuals):
         M = inputs['M']
         rt = inputs['rt']
         h = inputs['h']

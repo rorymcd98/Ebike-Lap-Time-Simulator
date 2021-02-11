@@ -40,7 +40,7 @@ class zEquation(om.ImplicitComponent):
 
         self.declare_coloring(wrt='*', method='cs', tol=1.0E-12, show_sparsity=True)
 
-    def compute(self, inputs, outputs):
+    def apply_nonlinear(self, inputs, outputs, residuals):
         M = inputs['M']
         g = inputs['g']
         rho = inputs['rho']

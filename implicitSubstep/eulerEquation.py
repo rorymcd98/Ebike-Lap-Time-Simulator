@@ -41,13 +41,14 @@ class eulerEquation(om.ImplicitComponent):
         self.add_input('zddot', val=np.zeros(nn), desc='vertical acceleration', units='m/s**2')
         self.add_input('sdot', val=np.zeros(nn), desc='road longitudinal velocity', units='m/s')
         self.add_input('Omega_z', val=np.zeros(nn), desc='yaw rate', units='rad/s')
+        self.add_input('omega_w', val=np.zeros(nn), desc='wheel spin', units='rad/s')
 
         #outputs
-        self.add_output('Betadot', val=np.zeros(nn), desc='drift rate', units='rad/s')
+        self.add_output('Betadot', val=np.zeros(nn), desc='drift rate', units='rad/s', lower = -5, upper = 5)
 
         self.declare_coloring(wrt='*', method='cs', tol=1.0E-12, show_sparsity=True)
 
-    def compute(self, inputs, outputs):
+    def apply_nonlinear(self, inputs, outputs, residuals):
         M = inputs['M']
         g = inputs['g']
         rho = inputs['rho']
@@ -90,6 +91,7 @@ class eulerEquation(om.ImplicitComponent):
         sddot = - (V*(np.sin(alpha)*Betadot - np.sin(alpha)*alphadot + np.cos(alpha)*Beta*alphadot))/(k*n - 1) - Vdot*(np.cos(alpha) + np.sin(alpha)*Beta)/(k*n - 1)
         Omegadot_x = - ((tau*np.cos(alpha) + nu*np.sin(alpha))*Vdot*(np.cos(alpha) + np.sin(alpha)*Beta))/(k*n - 1) - (V*(tau*np.cos(alpha) + nu*np.sin(alpha))*(np.sin(alpha)*Betadot - np.sin(alpha)*alphadot + np.cos(alpha)*Beta*alphadot))/(k*n - 1) - (V*(nu*np.cos(alpha)*alphadot - tau*np.sin(alpha)*alphadot)*(np.cos(alpha) + np.sin(alpha)*Beta))/(k*n - 1)
 
+        V_x = V
         V_y = -V*Beta
         V_z = sdot*tau*n
 

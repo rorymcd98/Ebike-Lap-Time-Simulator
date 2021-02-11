@@ -33,14 +33,16 @@ class yEquation(om.ImplicitComponent):
         self.add_input('z', val=np.zeros(nn), desc='vertical displacement', units='m')
         self.add_input('zdot', val=np.zeros(nn), desc='vertical velocity', units='m/s')
         self.add_input('sdot', val=np.zeros(nn), desc='road longitudinal velocity', units='m/s')
+        self.add_input('Omega_z', val=np.zeros(nn), desc='yaw rate', units='rad/s')
         self.add_input('Fy', val=np.zeros(nn), desc='lateral tyre load', units='N')
+        
 
         #outputs
         self.add_output('Phiddot', val=np.zeros(nn), desc='roll rate2', units='rad/s**2')
 
         self.declare_coloring(wrt='*', method='cs', tol=1.0E-12, show_sparsity=True)
 
-    def compute(self, inputs, outputs):
+    def apply_nonlinear(self, inputs, outputs, residuals):
         M = inputs['M']
         g = inputs['g']
         rho = inputs['rho']
