@@ -41,8 +41,7 @@ class combine(om.Group):
         self.add_subsystem(name='implicitOutputs',
                            subsys=combinedEOM(num_nodes=nn),promotes=['Vdot','Phiddot','zddot','Betadot'])
 
-        prob = om.Problem()
-        model = prob.model
+        #How do I solve the implicitOutputs subsystem with a newton solver?
 
         self.nonlinear_solver = om.NewtonSolver(solve_subsystems=False)
         self.linear_solver = om.ScipyKrylov()
