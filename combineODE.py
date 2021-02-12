@@ -9,7 +9,7 @@ from tyreODE import  tyre
 from curvature import curvature
 from timeAdder import TimeAdder
 from spinODE import spin
-from implicitSubstep.combinedEOM import combinedEOM
+from implicitSubstep.linearSystemGroup import linearSystem
 
 
 class combine(om.Group):
@@ -39,20 +39,7 @@ class combine(om.Group):
 
         #Solve equations 13 and 14
         self.add_subsystem(name='implicitOutputs',
-                           subsys=combinedEOM(num_nodes=nn),promotes=['Vdot','Phiddot','zddot','Betadot'])
-
-        #How do I solve the implicitOutputs subsystem with a newton solver?
-
-        # self.nonlinear_solver = om.NewtonSolver()
-        # self.nonlinear_solver.options['atol'] = 1e-14
-        # self.nonlinear_solver.options['rtol'] = 1e-14
-        # self.nonlinear_solver.options['solve_subsystems'] = True
-        # self.nonlinear_solver.options['err_on_non_converge'] = True
-        # self.nonlinear_solver.options['max_sub_solves'] = 10
-        # self.nonlinear_solver.options['maxiter'] = 150
-        # self.nonlinear_solver.options['iprint'] = -1
-        # self.nonlinear_solver.linesearch = om.BoundsEnforceLS()
-        # self.nonlinear_solver.linesearch.options['print_bound_enforce'] = True        
+                           subsys=linearSystem(num_nodes=nn),promotes=['Vdot','Phiddot','zddot','Betadot'])     
 
         self.add_subsystem(name='spin',subsys=spin(num_nodes=nn),promotes_inputs=['*'],promotes_outputs=['omegadot_w'])
 

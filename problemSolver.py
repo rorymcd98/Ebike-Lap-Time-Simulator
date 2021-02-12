@@ -46,7 +46,7 @@ phase.add_state('Phi', fix_initial=False, fix_final=False, units='rad', rate_sou
 phase.add_state('Phidot', fix_initial=False, fix_final=False, units='rad/s', rate_source='dPhidot_ds',targets=['Phidot'])
 phase.add_state('n', fix_initial=False, fix_final=False, units='m', upper = 4.0, lower = -4.0, rate_source='dn_ds',targets=['n'],ref=4.0) #normal distance to centerline. The bounds on n define the width of the track
 phase.add_state('alpha', fix_initial=False, fix_final=False, units='rad', rate_source='dalpha_ds',targets=['alpha'],ref=0.15) #vehicle heading angle with respect to centerline
-phase.add_state('V', fix_initial=False, fix_final=False, units='m/s', ref = 40, ref0=5,rate_source='dV_ds', targets=['V']) #velocity
+phase.add_state('V', fix_initial=False, fix_final=False, units='m/s', ref = 0.1, ref0=5,rate_source='dV_ds', targets=['V']) #velocity
 phase.add_state('Beta', fix_initial=False, fix_final=False, units='rad', rate_source='dBeta_ds',targets=['Beta'])
 phase.add_state('z', fix_initial=False, fix_final=False, units='m', rate_source='dz_ds',targets=['z'])
 phase.add_state('zdot', fix_initial=False, fix_final=False, units='m/s', rate_source='dzdot_ds',targets=['zdot'])
@@ -57,8 +57,8 @@ phase.add_state('e', fix_initial=False, fix_final=False, units='J', rate_source=
 
 #Define Controls
 phase.add_control(name='Omegadot_z', units='rad/s**2', lower=None, upper=None,fix_initial=False,fix_final=False, targets=['Omegadot_z'],ref=0.04) #steering angle
-phase.add_control(name='tau_t', lower=0, upper=2, units='N*m',fix_initial=False,fix_final=False, targets=['tau_t']) #the thrust controls the longitudinal force of the rear tires and is positive while accelerating, negative while braking
-phase.add_control(name='tau_b', lower=-3, upper=0 ,units='N*m',fix_initial=False,fix_final=False, targets=['tau_b'])
+phase.add_control(name='tau_t', lower=None, upper=None, units='N*m',fix_initial=False,fix_final=False, targets=['tau_t']) #the thrust controls the longitudinal force of the rear tires and is positive while accelerating, negative while braking
+phase.add_control(name='tau_b', lower=None, upper=None ,units='N*m',fix_initial=False,fix_final=False, targets=['tau_b'])
 
 #Performance Constraints
 #pmax = 960000 #W
@@ -93,7 +93,7 @@ phase.add_objective('t', loc='final') #note that we use the 'state' time instead
 #Link the states at the start and end of the phase in order to ensure a continous lap
 #traj.link_phases(phases=['phase0', 'phase0'], vars=['Phi','Phidot','n','alpha','V','Beta','z','zdot','omega_w','Omega_z','T','e'], locs=('final', 'initial'))
 
-IPOPT = False
+IPOPT = True
 
 # Set the driver. IPOPT or SNOPT are recommended but SLSQP might work.
 
@@ -101,7 +101,7 @@ if IPOPT:
 	p.driver = om.pyOptSparseDriver(optimizer='IPOPT')
 
 	p.driver.opt_settings['mu_init'] = 1e-3
-	p.driver.opt_settings['max_iter'] = 500
+	p.driver.opt_settings['max_iter'] = 1
 	p.driver.opt_settings['acceptable_tol'] = 1e-3
 	p.driver.opt_settings['constr_viol_tol'] = 1e-3
 	p.driver.opt_settings['compl_inf_tol'] = 1e-3
