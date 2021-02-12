@@ -43,11 +43,16 @@ class combine(om.Group):
 
         #How do I solve the implicitOutputs subsystem with a newton solver?
 
-        self.nonlinear_solver = om.NewtonSolver(solve_subsystems=False)
-        self.linear_solver = om.ScipyKrylov()
-
-        prob.setup()
-        prob.run_model()
+        # self.nonlinear_solver = om.NewtonSolver()
+        # self.nonlinear_solver.options['atol'] = 1e-14
+        # self.nonlinear_solver.options['rtol'] = 1e-14
+        # self.nonlinear_solver.options['solve_subsystems'] = True
+        # self.nonlinear_solver.options['err_on_non_converge'] = True
+        # self.nonlinear_solver.options['max_sub_solves'] = 10
+        # self.nonlinear_solver.options['maxiter'] = 150
+        # self.nonlinear_solver.options['iprint'] = -1
+        # self.nonlinear_solver.linesearch = om.BoundsEnforceLS()
+        # self.nonlinear_solver.linesearch.options['print_bound_enforce'] = True        
 
         self.add_subsystem(name='spin',subsys=spin(num_nodes=nn),promotes_inputs=['*'],promotes_outputs=['omegadot_w'])
 
