@@ -9,7 +9,7 @@ from tyreODE import  tyre
 from curvature import curvature
 from timeAdder import TimeAdder
 from spinODE import spin
-from implicitSubstep.implicitSolver import implicitSolver
+from implicitSubstep.combinedEOM import combinedEOM
 
 
 class combine(om.Group):
@@ -39,7 +39,18 @@ class combine(om.Group):
 
         #Solve equations 13 and 14
         self.add_subsystem(name='implicitOutputs',
-                           subsys=implicitSolver(num_nodes=nn),promotes=['Vdot','Phiddot','zddot','Betadot'])
+                           subsys=combinedEOM(num_nodes=nn),promotes=['Vdot','Phiddot','zddot','Betadot'])
+
+        prob = om.Problem()
+        model = prob.model
+
+        model.add_subsystem('comp', ImpWithInitial())
+
+        model.nonlinear_solver = om.NewtonSolver(solve_subsystems=False)
+        model.linear_solver = om.ScipyKrylov()
+
+        prob.setup()
+        prob.run_model()
 
         self.add_subsystem(name='spin',subsys=spin(num_nodes=nn),promotes_inputs=['*'],promotes_outputs=['omegadot_w'])
 

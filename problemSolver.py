@@ -65,11 +65,11 @@ phase.add_control(name='tau_b', lower=-3, upper=0 ,units='N*m',fix_initial=False
 #phase.add_path_constraint('power',shape=(1,),units='W',upper=pmax,ref=100000) #engine power limit
 phase.add_path_constraint('im',shape=(1,),units='A',upper=200,ref=100000)
 
-#The following four constraints are the tire friction limits, with 'rr' designating the rear right wheel etc. This limit is computed in tireConstraintODE.py
+#The following four constraints is the tire friction limit
 phase.add_path_constraint('TC',shape=(1,),units=None,upper=1)
 
 #Some of the vehicle design parameters are available to set here. Other parameters can be found in their respective ODE files.
-phase.add_design_parameter('ei',val=50000.0,units='J',opt=False,targets=['powerTrain.ei'],dynamic=False) #vehicle mass
+phase.add_design_parameter('ei',val=50000.0,units='J',opt=False,targets=['powerTrain.ei'],dynamic=False) 
 
 #Minimize final time.
 phase.add_objective('t', loc='final') #note that we use the 'state' time instead of Dymos 'time'
