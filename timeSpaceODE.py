@@ -39,7 +39,6 @@ class timeSpace(om.ExplicitComponent):
         self.add_output('dOmega_z_ds', val=np.zeros(nn), units = 'rad/s/m')
         self.add_output('dT_ds', val=np.zeros(nn), units = 'C/m')
         self.add_output('de_ds', val=np.zeros(nn), units = 'J/m')
-        self.add_output('dt_ds', val=np.zeros(nn), units = 's/m')#time increment
 
         self.declare_coloring(wrt='*', method='cs', tol=1.0E-12, show_sparsity=True)
     
@@ -70,4 +69,3 @@ class timeSpace(om.ExplicitComponent):
         outputs['dOmega_z_ds'] = Omegadot_z/sdot
         outputs['dT_ds'] = Tdot/sdot
         outputs['de_ds'] = edot/sdot
-        outputs['dt_ds'] = 1/sdot
