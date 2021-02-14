@@ -40,7 +40,34 @@ class timeSpace(om.ExplicitComponent):
         self.add_output('dT_ds', val=np.zeros(nn), units = 'C/m')
         self.add_output('de_ds', val=np.zeros(nn), units = 'J/m')
 
-        self.declare_coloring(wrt='*', method='cs', tol=1.0E-12, show_sparsity=True)
+        # Setup partials
+        arange = np.arange(self.options['num_nodes'], dtype=int)
+
+        # #partials
+        self.declare_partials(of='dPhi_ds', wrt='Phidot', rows=arange, cols=arange)
+        self.declare_partials(of='dPhi_ds', wrt='sdot', rows=arange, cols=arange)
+        self.declare_partials(of='dPhidot_ds', wrt='Phiddot', rows=arange, cols=arange)
+        self.declare_partials(of='dPhidot_ds', wrt='sdot', rows=arange, cols=arange)
+        self.declare_partials(of='dn_ds', wrt='ndot', rows=arange, cols=arange)
+        self.declare_partials(of='dn_ds', wrt='sdot', rows=arange, cols=arange)
+        self.declare_partials(of='dalpha_ds', wrt='alphadot', rows=arange, cols=arange)
+        self.declare_partials(of='dalpha_ds', wrt='sdot', rows=arange, cols=arange)
+        self.declare_partials(of='dV_ds', wrt='Vdot', rows=arange, cols=arange)
+        self.declare_partials(of='dV_ds', wrt='sdot', rows=arange, cols=arange)
+        self.declare_partials(of='dBeta_ds', wrt='Betadot', rows=arange, cols=arange)
+        self.declare_partials(of='dBeta_ds', wrt='sdot', rows=arange, cols=arange)
+        self.declare_partials(of='dz_ds', wrt='zdot', rows=arange, cols=arange)
+        self.declare_partials(of='dz_ds', wrt='sdot', rows=arange, cols=arange)
+        self.declare_partials(of='dzdot_ds', wrt='zddot', rows=arange, cols=arange)
+        self.declare_partials(of='dzdot_ds', wrt='sdot', rows=arange, cols=arange)
+        self.declare_partials(of='domega_w_ds', wrt='omegadot_w', rows=arange, cols=arange)
+        self.declare_partials(of='domega_w_ds', wrt='sdot', rows=arange, cols=arange)
+        self.declare_partials(of='dOmega_z_ds', wrt='Omegadot_z', rows=arange, cols=arange)
+        self.declare_partials(of='dOmega_z_ds', wrt='sdot', rows=arange, cols=arange)
+        self.declare_partials(of='dT_ds', wrt='Tdot', rows=arange, cols=arange)
+        self.declare_partials(of='dT_ds', wrt='sdot', rows=arange, cols=arange)
+        self.declare_partials(of='de_ds', wrt='edot', rows=arange, cols=arange)
+        self.declare_partials(of='de_ds', wrt='sdot', rows=arange, cols=arange)
     
     def compute(self, inputs, outputs):
         sdot = inputs['sdot']
@@ -69,3 +96,43 @@ class timeSpace(om.ExplicitComponent):
         outputs['dOmega_z_ds'] = Omegadot_z/sdot
         outputs['dT_ds'] = Tdot/sdot
         outputs['de_ds'] = edot/sdot
+        
+    def compute_partials(self, inputs, jacobian):
+        sdot = inputs['sdot']
+        Phidot = inputs['Phidot']
+        Phiddot = inputs['Phiddot']
+        ndot = inputs['ndot']
+        alphadot = inputs['alphadot']
+        Vdot = inputs['Vdot']
+        Betadot = inputs['Betadot']
+        zdot = inputs['zdot']
+        zddot = inputs['zddot']
+        omegadot_w = inputs['omegadot_w']
+        Omegadot_z = inputs['Omegadot_z']
+        Tdot = inputs['Tdot']
+        edot = inputs['edot']
+        
+        jacobian['dPhi_ds','Phidot']=1/sdot
+        jacobian['dPhi_ds','sdot']=-1/sdot**2
+        jacobian['dPhidot_ds','Phiddot']=1/sdot
+        jacobian['dPhidot_ds','sdot']=-1/sdot**2
+        jacobian['dn_ds','ndot']=1/sdot
+        jacobian['dn_ds','sdot']=-1/sdot**2
+        jacobian['dalpha_ds','alphadot']=1/sdot
+        jacobian['dalpha_ds','sdot']=-1/sdot**2
+        jacobian['dV_ds','Vdot']=1/sdot
+        jacobian['dV_ds','sdot']=-1/sdot**2
+        jacobian['dBeta_ds','Betadot']=1/sdot
+        jacobian['dBeta_ds','sdot']=-1/sdot**2
+        jacobian['dz_ds','zdot']=1/sdot
+        jacobian['dz_ds','sdot']=-1/sdot**2
+        jacobian['dzdot_ds','zddot']=1/sdot
+        jacobian['dzdot_ds','sdot']=-1/sdot**2
+        jacobian['domega_w_ds','omegadot_w']=1/sdot
+        jacobian['domega_w_ds','sdot']=-1/sdot**2
+        jacobian['dOmega_z_ds','Omegadot_z']=1/sdot
+        jacobian['dOmega_z_ds','sdot']=-1/sdot**2
+        jacobian['dT_ds','Tdot']=1/sdot
+        jacobian['dT_ds','sdot']=-1/sdot**2
+        jacobian['de_ds','edot']=1/sdot
+        jacobian['de_ds','sdot']=-1/sdot**2
