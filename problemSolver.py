@@ -54,19 +54,19 @@ phase.add_state('omega_w', fix_initial=False, fix_final=False, units='rad/s', ra
 phase.add_state('Omega_z', fix_initial=False, fix_final=False, units='rad/s', rate_source='dOmega_z_ds',targets=['Omega_z'])
 phase.add_state('T', fix_initial=False, fix_final=False, units='C', rate_source='dT_ds',targets=['powerTrain.T'])
 phase.add_state('e', fix_initial=False, fix_final=False, units='J', rate_source='de_ds',targets=['powerTrain.e'],ref = 50000)
+#Add lower = 0
 
 #Define Controls
 phase.add_control(name='Omegadot_z', units='rad/s**2', lower=None, upper=None,fix_initial=False,fix_final=False, targets=['Omegadot_z'],ref=0.04) #steering angle
 phase.add_control(name='tau_t', lower=None, upper=None, units='N*m',fix_initial=False,fix_final=False, targets=['tau_t']) #the thrust controls the longitudinal force of the rear tires and is positive while accelerating, negative while braking
 phase.add_control(name='tau_b', lower=None, upper=None ,units='N*m',fix_initial=False,fix_final=False, targets=['tau_b'])
 
-#Performance Constraints
-#pmax = 960000 #W
-#phase.add_path_constraint('power',shape=(1,),units='W',upper=pmax,ref=100000) #engine power limit
-phase.add_path_constraint('im',shape=(1,),units='A',upper=200,ref=100000)
+#Physical Constraints
+phase.add_path_constraint('im',shape=(1,),units='A',upper=200)#Max motor current
+phase.add_path_constraint('TC',shape=(1,),units=None,upper=1)#Max tyre constraint
+phase.add_path_constraint('N',shape=(1,),units=None,lower=0)#Enforce positive load
+#Add max power
 
-#The following four constraints is the tire friction limit
-phase.add_path_constraint('TC',shape=(1,),units=None,upper=1)
 
 #Some of the vehicle design parameters are available to set here. Other parameters can be found in their respective ODE files.
 phase.add_design_parameter('ei',val=50000.0,units='J',opt=False,targets=['powerTrain.ei'],dynamic=False) 
