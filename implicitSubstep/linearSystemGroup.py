@@ -5,6 +5,7 @@ from scipy.sparse.linalg import gmres
 class linearSystem(om.ImplicitComponent):
     def initialize(self):
         self.options.declare('num_nodes', types=int)
+        self.out_guess = np.array((4,1))
 
     def setup(self):
         nn = self.options['num_nodes']
@@ -17,7 +18,7 @@ class linearSystem(om.ImplicitComponent):
         self.add_input('Cd', val=0.41, desc='drag coefficient', units=None)
         self.add_input('h', val=0.6, desc='CoG height', units=None)
         self.add_input('g', val=9.81, desc='gravity', units='m/s**2')
-        self.add_input('Cl', val=0.03, desc='lift coefficient', units=None)
+        self.add_input('Cl', val=0.00, desc='lift coefficient', units=None)
         self.add_input('r', val=0.3, desc='wheel radius', units='m')
         self.add_input('Ixx', val=19, desc='roll moment of inertia', units='kg*m**2')
         self.add_input('Iyy', val=5, desc='pitch moment of inertia', units='kg*m**2') 
@@ -48,8 +49,8 @@ class linearSystem(om.ImplicitComponent):
         self.add_input('N', val=np.zeros(nn), desc='tyre load', units='N')
         
         #outputs
-        self.add_output('Vdot', val=np.ones(nn), desc='forward acceleration', units='m/s**2', lower = -4, upper = 4)
-        self.add_output('Betadot', val=np.zeros(nn), desc='drift rate', units='rad/s', lower = -5, upper = 5)
+        self.add_output('Vdot', val=np.ones(nn), desc='forward acceleration', units='m/s**2')
+        self.add_output('Betadot', val=np.zeros(nn), desc='drift rate', units='rad/s')
         self.add_output('Phiddot', val=np.zeros(nn), desc='roll rate2', units='rad/s**2')
         self.add_output('zddot', val=np.zeros(nn), desc='vertical acceleration', units='m/s**2')
 
@@ -108,14 +109,12 @@ class linearSystem(om.ImplicitComponent):
 [Ixx*(sdot*(alphadot*tau*np.sin(alpha) - alphadot*nu*np.cos(alpha)) + (tau*np.cos(alpha) + nu*np.sin(alpha))*(k*ndot - Beta*V*np.cos(alpha + np.cos(alpha))*(alphadot - alphadot*np.sin(alpha)))) - (Iyy - Izz)*(np.cos(Phi)*np.sin(Phi)*(sdot**2*(nu*np.cos(alpha) - tau*np.sin(alpha))**2 - Omega_z**2) - Omega_z*sdot*(nu*np.cos(alpha) - tau*np.sin(alpha))*(2*np.cos(Phi)**2 - 1)) + M*((rt - z)*(n*tau*(tau*np.cos(alpha) + nu*np.sin(alpha))*sdot**2 + 2*zdot*(tau*np.cos(alpha) + nu*np.sin(alpha))*sdot - Omega_z*V + g*sig*np.sin(alpha)) + (h - rt)**2*(sdot*(alphadot*tau*np.sin(alpha) - alphadot*nu*np.cos(alpha)) + (tau*np.cos(alpha) + nu*np.sin(alpha))*(k*ndot - Beta*V*np.cos(alpha + np.cos(alpha))*(alphadot - alphadot*np.sin(alpha))) - np.cos(Phi)*np.sin(Phi)*(sdot**2*(nu*np.cos(alpha) - tau*np.sin(alpha))**2 - Omega_z**2) + 2*sdot**2*np.cos(Phi)**2*(tau*np.cos(alpha) + nu*np.sin(alpha))*(nu*np.cos(alpha) - tau*np.sin(alpha))) + (sdot*(alphadot*tau*np.sin(alpha) - alphadot*nu*np.cos(alpha)) + (tau*np.cos(alpha) + nu*np.sin(alpha))*(k*ndot - Beta*V*np.cos(alpha + np.cos(alpha))*(alphadot - alphadot*np.sin(alpha))))*(z**2 - r*rt*z) + (h - rt)*(np.sin(Phi)*(g + n*tau*(k*ndot - Beta*V*np.cos(alpha + np.cos(alpha))*(alphadot - alphadot*np.sin(alpha))) + Beta*V*sdot*(tau*np.cos(alpha) + nu*np.sin(alpha))) + np.cos(Phi)*(sdot*(tau*np.cos(alpha) + nu*np.sin(alpha)) + g*sig*np.sin(alpha) + n*sdot*tau - 2*sdot*zdot*(tau*np.cos(alpha) + nu*np.sin(alpha)))) + (h - rt)*(rt - z)*(2*np.cos(Phi)*(sdot*(alphadot*tau*np.sin(alpha) - alphadot*nu*np.cos(alpha)) + (tau*np.cos(alpha) + nu*np.sin(alpha))*(k*ndot - Beta*V*np.cos(alpha + np.cos(alpha))*(alphadot - alphadot*np.sin(alpha)))) - np.sin(Phi)*(sdot**2*(nu*np.cos(alpha) - tau*np.sin(alpha))**2 + Omega_z**2 - Phidot**2 - 2*Phidot*sdot*(tau*np.cos(alpha) + nu*np.sin(alpha))) + 2*Omega_z*sdot*np.cos(Phi)*(nu*np.cos(alpha) - tau*np.sin(alpha))) - Omega_z*sdot*(nu*np.cos(alpha) - tau*np.sin(alpha))*(h - z)*(h - 2*rt + z)) - Igy*omega_w*(Omega_z*np.cos(Phi) - sdot*np.sin(Phi)*(nu*np.cos(alpha) - tau*np.sin(alpha))) + (Cl*V**2*rho*np.sin(Phi)*(rt - z))/2]])
 
         x = np.array([[Vdot],[Phiddot],[zddot],[Betadot]])
+        residual_vector = (A[:,:,None]*x[:,:,None]).sum(1)-b
 
-        for node in range(len(A[0][0])):
-            hold = A[:,:,node].dot(x[:,:,node]) - b[:,:,node]
-
-            residuals['Vdot'][node]= hold[0]
-            residuals['Phiddot'][node]= hold[1]
-            residuals['zddot'][node]= hold[2]
-            residuals['Betadot'][node]= hold[3]
+        residuals['Vdot'] = residual_vector[0,:,:]
+        residuals['Phiddot'] = residual_vector[1,:,:]
+        residuals['zddot'] = residual_vector[2,:,:]
+        residuals['Betadot'] = residual_vector[3,:,:]
 
 
     def solve_nonlinear(self, inputs, outputs):
@@ -167,9 +166,10 @@ class linearSystem(om.ImplicitComponent):
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                [M*g - N + M*V*sdot*(nu*np.cos(alpha) - tau*np.sin(alpha)) - M*sdot**2*(tau*np.cos(alpha) + nu*np.sin(alpha))**2*(rt - z) - M*sdot**2*(nu*np.cos(alpha) - tau*np.sin(alpha))**2*(rt - z) + M*n*tau*(k*ndot - Beta*V*np.cos(alpha + np.cos(alpha))*(alphadot - alphadot*np.sin(alpha))) + M*np.sin(Phi)*(sdot*(alphadot*tau*np.sin(alpha) - alphadot*nu*np.cos(alpha)) + (tau*np.cos(alpha) + nu*np.sin(alpha))*(k*ndot - Beta*V*np.cos(alpha + np.cos(alpha))*(alphadot - alphadot*np.sin(alpha))))*(h - rt) - (Cl*V**2*rho*np.cos(Phi))/2 - M*Phidot**2*np.cos(Phi)*(h - rt) - M*np.cos(Phi)*(h - rt)*(sdot**2*(tau*np.cos(alpha) + nu*np.sin(alpha))**2 + sdot**2*(nu*np.cos(alpha) - tau*np.sin(alpha))**2) + Beta*M*V*sdot*(tau*np.cos(alpha) + nu*np.sin(alpha)) - 2*M*Phidot*sdot*np.cos(Phi)*(h - rt)*(tau*np.cos(alpha) + nu*np.sin(alpha)) - M*Omega_z*sdot*np.sin(Phi)*(h - rt)*(nu*np.cos(alpha) - tau*np.sin(alpha))],
 [Ixx*(sdot*(alphadot*tau*np.sin(alpha) - alphadot*nu*np.cos(alpha)) + (tau*np.cos(alpha) + nu*np.sin(alpha))*(k*ndot - Beta*V*np.cos(alpha + np.cos(alpha))*(alphadot - alphadot*np.sin(alpha)))) - (Iyy - Izz)*(np.cos(Phi)*np.sin(Phi)*(sdot**2*(nu*np.cos(alpha) - tau*np.sin(alpha))**2 - Omega_z**2) - Omega_z*sdot*(nu*np.cos(alpha) - tau*np.sin(alpha))*(2*np.cos(Phi)**2 - 1)) + M*((rt - z)*(n*tau*(tau*np.cos(alpha) + nu*np.sin(alpha))*sdot**2 + 2*zdot*(tau*np.cos(alpha) + nu*np.sin(alpha))*sdot - Omega_z*V + g*sig*np.sin(alpha)) + (h - rt)**2*(sdot*(alphadot*tau*np.sin(alpha) - alphadot*nu*np.cos(alpha)) + (tau*np.cos(alpha) + nu*np.sin(alpha))*(k*ndot - Beta*V*np.cos(alpha + np.cos(alpha))*(alphadot - alphadot*np.sin(alpha))) - np.cos(Phi)*np.sin(Phi)*(sdot**2*(nu*np.cos(alpha) - tau*np.sin(alpha))**2 - Omega_z**2) + 2*sdot**2*np.cos(Phi)**2*(tau*np.cos(alpha) + nu*np.sin(alpha))*(nu*np.cos(alpha) - tau*np.sin(alpha))) + (sdot*(alphadot*tau*np.sin(alpha) - alphadot*nu*np.cos(alpha)) + (tau*np.cos(alpha) + nu*np.sin(alpha))*(k*ndot - Beta*V*np.cos(alpha + np.cos(alpha))*(alphadot - alphadot*np.sin(alpha))))*(z**2 - r*rt*z) + (h - rt)*(np.sin(Phi)*(g + n*tau*(k*ndot - Beta*V*np.cos(alpha + np.cos(alpha))*(alphadot - alphadot*np.sin(alpha))) + Beta*V*sdot*(tau*np.cos(alpha) + nu*np.sin(alpha))) + np.cos(Phi)*(sdot*(tau*np.cos(alpha) + nu*np.sin(alpha)) + g*sig*np.sin(alpha) + n*sdot*tau - 2*sdot*zdot*(tau*np.cos(alpha) + nu*np.sin(alpha)))) + (h - rt)*(rt - z)*(2*np.cos(Phi)*(sdot*(alphadot*tau*np.sin(alpha) - alphadot*nu*np.cos(alpha)) + (tau*np.cos(alpha) + nu*np.sin(alpha))*(k*ndot - Beta*V*np.cos(alpha + np.cos(alpha))*(alphadot - alphadot*np.sin(alpha)))) - np.sin(Phi)*(sdot**2*(nu*np.cos(alpha) - tau*np.sin(alpha))**2 + Omega_z**2 - Phidot**2 - 2*Phidot*sdot*(tau*np.cos(alpha) + nu*np.sin(alpha))) + 2*Omega_z*sdot*np.cos(Phi)*(nu*np.cos(alpha) - tau*np.sin(alpha))) - Omega_z*sdot*(nu*np.cos(alpha) - tau*np.sin(alpha))*(h - z)*(h - 2*rt + z)) - Igy*omega_w*(Omega_z*np.cos(Phi) - sdot*np.sin(Phi)*(nu*np.cos(alpha) - tau*np.sin(alpha))) + (Cl*V**2*rho*np.sin(Phi)*(rt - z))/2]])
 
-        for node in range(len(A[0][0])):
-            x,exitCode = gmres(A[:,:,node],b[:,:,node])
+        for node in range(nn):
+            x,exitCode = gmres(A[:,:,node],b[:,:,node],x0=self.out_guess)
             
+            self.out_guess = x
             outputs['Vdot'][node] = x[0]
             outputs['Phiddot'][node] = x[1]
             outputs['zddot'][node] = x[2]
