@@ -65,7 +65,7 @@ phase.add_control(name='tau_b', lower=None, upper=None ,units='N*m',fix_initial=
 #Physical Constraints
 phase.add_path_constraint('im',shape=(1,),units='A',lower=2,upper=160)#Max motor current
 phase.add_path_constraint('TC',shape=(1,),units=None,upper=1)#Max tyre constraint
-phase.add_path_constraint('N',shape=(1,),units=None,lower=0)#Enforce positive load
+#phase.add_path_constraint('N',shape=(1,),units=None,lower=0)#Enforce positive load
 #Add max power
 
 
