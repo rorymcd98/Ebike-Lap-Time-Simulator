@@ -71,9 +71,8 @@ class spin(om.ExplicitComponent):
         Fy = inputs['Fy']
 
         Omega_y = sdot*(nu*np.cos(alpha)-tau*np.sin(alpha))
-
-        sddot = - (V*(np.sin(alpha)*Betadot - np.sin(alpha)*alphadot + np.cos(alpha)*Beta*alphadot))/(k*n - 1) - Vdot*(np.cos(alpha) + np.sin(alpha)*Beta)/(k*n - 1)
-        Omegadot_y = (V*(tau*np.cos(alpha)*alphadot + nu*np.sin(alpha)*alphadot)*(np.cos(alpha) + np.sin(alpha)*Beta))/(k*n - 1) - (V*(nu*np.cos(alpha) - tau*np.sin(alpha))*(np.sin(alpha)*Betadot - np.sin(alpha)*alphadot + np.cos(alpha)*Beta*alphadot))/(k*n - 1) - ((nu*np.cos(alpha) - tau*np.sin(alpha))*Vdot*(np.cos(alpha) + np.sin(alpha)*Beta))/(k*n - 1)        
+        sddot = (k*V*ndot*(np.cos(alpha) + np.sin(alpha)*Beta))/(k*n - 1)^2 - (V*(np.sin(alpha)*Betadot - np.sin(alpha)*alphadot + np.cos(alpha)*Beta*alphadot))/(k*n - 1) - (Vdot*(np.cos(alpha) + np.sin(alpha)*Beta))/(k*n - 1)
+        Omegadot_y = (nu*np.cos(alpha) - tau*np.sin(alpha))*sddot - sdot*(tau*np.cos(alpha)*alphadot + nu*np.sin(alpha)*alphadot)
 
         tau_r = (N*np.cos(Phi)+Fy*np.sin(Phi))*mu_r
 
