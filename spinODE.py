@@ -37,6 +37,7 @@ class spin(om.ExplicitComponent):
         self.add_input('tau_w', val=np.zeros(nn), desc='driving torque', units='N*m')
         self.add_input('N', val=np.zeros(nn), desc='tyre load', units='N')
         self.add_input('Fy', val=np.zeros(nn), desc='lateral tyre load', units='N')
+        self.add_input('ndot', val=np.zeros(nn), desc='road lateral velocity', units='m/s')
 
         #outputs
         self.add_output('omegadot_w', val=np.zeros(nn), desc='wheel spin2', units='rad/s**2')
@@ -69,6 +70,7 @@ class spin(om.ExplicitComponent):
         Vdot = inputs['Vdot']
         N = inputs['N']
         Fy = inputs['Fy']
+        ndot = inputs['ndot']
 
         Omega_y = sdot*(nu*np.cos(alpha)-tau*np.sin(alpha))
         sddot = (k*V*ndot*(np.cos(alpha) + np.sin(alpha)*Beta))/(k*n - 1)**2 - (V*(np.sin(alpha)*Betadot - np.sin(alpha)*alphadot + np.cos(alpha)*Beta*alphadot))/(k*n - 1) - (Vdot*(np.cos(alpha) + np.sin(alpha)*Beta))/(k*n - 1)
