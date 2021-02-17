@@ -16,22 +16,9 @@ class brakeThrottle(om.ExplicitComponent):
         #output
         self.add_output('tau_w', val=np.zeros(nn), desc='driving torque', units='N*m')
 
-        self.declare_coloring(wrt='*', method='cs', tol=1.0E-12, show_sparsity=True)
-        # Setup partials
-        # arange = np.arange(self.options['num_nodes'], dtype=int)
-
-        # #partials
-        # self.declare_partials(of='tau_w', wrt='tau_t', rows=arange, cols=arange)
-        # self.declare_partials(of='tau_w', wrt='tau_b', rows=arange, cols=arange)
+        self.declare_coloring(wrt='*', method='cs', tol=1.0E-12)
 
     def compute(self, inputs, outputs):
         tau_t = inputs['tau_t']
         tau_b = inputs['tau_b']
-        tau_w = tau_t + tau_b
-
-    # def compute_partials(self, inputs, jacobian):
-    #     tau_t = inputs['tau_t']
-    #     tau_b = inputs['tau_b']
-
-    #     jacobian['tau_w', 'tau_t'] = 1
-    #     jacobian['tau_w', 'tau_b'] = 1
+        outputs['tau_w'] = tau_t + tau_b

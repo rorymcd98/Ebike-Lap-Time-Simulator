@@ -24,7 +24,7 @@ class tracking(om.ExplicitComponent):
         self.add_output('ndot', val=np.zeros(nn), desc='road lateral velocity', units='m/s')
         self.add_output('alphadot', val=np.zeros(nn), desc='relative heading rate', units='rad/s')
 
-        self.declare_coloring(wrt='*', method='cs', tol=1.0E-12, show_sparsity=True)
+        self.declare_coloring(wrt='*', method='cs', tol=1.0E-12)
 
     def compute(self, inputs, outputs):
         V = inputs['V']

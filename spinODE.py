@@ -10,9 +10,10 @@ class spin(om.ExplicitComponent):
         nn = self.options['num_nodes']
 
         #constants
-        self.add_input('rt', val=0.1, desc='wheel toroid radius', units=None)
+        self.add_input('rt', val=0.1, desc='wheel toroid radius', units='m')
         self.add_input('r', val=0.3, desc='wheel radius', units='m')
         self.add_input('Iwy', val=0.7, desc='wheelspin moment of inertia', units='kg*m**2')
+        self.add_input('mu_r', val=0.015, desc='tyre rolling resistance', units=None)
 
         #states
         self.add_input('Phi', val=np.zeros(nn), desc='roll', units='rad')
@@ -32,16 +33,15 @@ class spin(om.ExplicitComponent):
         self.add_input('Omega_z', val=np.zeros(nn), desc='yaw rate', units='rad/s')
         self.add_input('Omegadot_z', val=np.zeros(nn), desc='yaw rate2', units='rad/s**2')
         self.add_input('Fx', val=np.zeros(nn), desc='longitudinal tyre force', units='N')
-        self.add_input('mu_r', val=0.015, desc='tyre rolling resistance', units=None)
         self.add_input('omega_w', val=np.zeros(nn), desc='wheel spin', units='rad/s')
         self.add_input('tau_w', val=np.zeros(nn), desc='driving torque', units='N*m')
         self.add_input('N', val=np.zeros(nn), desc='tyre load', units='N')
         self.add_input('Fy', val=np.zeros(nn), desc='lateral tyre load', units='N')
 
         #outputs
-        self.add_output('omegadot_w', val=np.zeros(nn), desc='', units=None)
+        self.add_output('omegadot_w', val=np.zeros(nn), desc='wheel spin2', units='rad/s**2')
 
-        self.declare_coloring(wrt='*', method='cs', tol=1.0E-12, show_sparsity=True)
+        self.declare_coloring(wrt='*', method='cs', tol=1.0E-12)
 
     def compute(self, inputs, outputs):
         rt = inputs['rt']

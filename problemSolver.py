@@ -16,7 +16,7 @@ from linewidthhelper import *
 print('Config: RWD single thrust')
 
 track = tracks.ovaltrack #change track here and in curvature.py. Tracks are defined in tracks.py
-plot = True #plot track and telemetry
+plot = False #plot track and telemetry
 
 points = getTrackPoints(track) #generate nodes along the centerline for curvature calculation (different than collocation nodes)
 finespline,gates,gatesd,curv,slope = getSpline(points,s=0.0) #fit the centerline spline. by default 10000 points
@@ -52,8 +52,8 @@ phase.add_state('z', fix_initial=False, fix_final=False, units='m', rate_source=
 phase.add_state('zdot', fix_initial=False, fix_final=False, units='m/s', rate_source='dzdot_ds',targets=['zdot'])
 phase.add_state('omega_w', fix_initial=False, fix_final=False, units='rad/s', rate_source='domega_w_ds',targets=['omega_w'])
 phase.add_state('Omega_z', fix_initial=False, fix_final=False, units='rad/s', rate_source='dOmega_z_ds',targets=['Omega_z'])
-phase.add_state('T', fix_initial=False, fix_final=False, units='C', rate_source='dT_ds',targets=['powerTrain.T'])
-phase.add_state('e', fix_initial=False, fix_final=False, units='J', rate_source='de_ds',targets=['powerTrain.e'],ref = 50000)
+phase.add_state('T', fix_initial=False, fix_final=False, units='C', rate_source='dT_ds',targets=['T'])
+phase.add_state('e', fix_initial=True, fix_final=False, units='J', rate_source='de_ds',targets=['e'])
 #Add lower = 0
 
 #Define Controls
@@ -62,7 +62,7 @@ phase.add_control(name='tau_t', lower=None, upper=None, units='N*m',fix_initial=
 phase.add_control(name='tau_b', lower=None, upper=None ,units='N*m',fix_initial=False,fix_final=False, targets=['tau_b'])
 
 #Physical Constraints
-phase.add_path_constraint('im',shape=(1,),units='A',upper=200)#Max motor current
+phase.add_path_constraint('im',shape=(1,),units='A',lower=2,upper=160)#Max motor current
 phase.add_path_constraint('TC',shape=(1,),units=None,upper=1)#Max tyre constraint
 phase.add_path_constraint('N',shape=(1,),units=None,lower=0)#Enforce positive load
 #Add max power
@@ -76,22 +76,12 @@ phase.add_objective('t', loc='final') #note that we use the 'state' time instead
 
 #Add output timeseries
 #phase.add_timeseries_output('Phi',units='rad/s',shape=(1,))
-#phase.add_timeseries_output('',units='',shape=(1,))
-#phase.add_timeseries_output('',units='',shape=(1,))
-#phase.add_timeseries_output('',units='',shape=(1,))
-#phase.add_timeseries_output('',units='',shape=(1,))
-#phase.add_timeseries_output('',units='',shape=(1,))
-#phase.add_timeseries_output('',units='',shape=(1,))
-#phase.add_timeseries_output('Vdot',units='m/s**2',shape=(1,))
-#phase.add_timeseries_output('alphadot',units='rad/s',shape=(1,))
-#phase.add_timeseries_output('omegadot',units='rad/s**2',shape=(1,))
-#phase.add_timeseries_output('sdot',units='m/s',shape=(1,))
-#phase.add_timeseries_output('im',units='A',shape=(1,))
-#phase.add_timeseries_output('TC',units=None,shape=(1,))
-#phase.add_timeseries_output('curv.kappa',units='1/m',shape=(1,))
+phase.add_timeseries_output('k',units='1/m',shape=(1,))
 
 #Link the states at the start and end of the phase in order to ensure a continous lap
-#traj.link_phases(phases=['phase0', 'phase0'], vars=['Phi','Phidot','n','alpha','V','Beta','z','zdot','omega_w','Omega_z','T','e'], locs=('final', 'initial'))
+traj.link_phases(phases=['phase0', 'phase0'], vars=['Phi','Phidot','n','alpha','V','Beta','z','zdot','omega_w','Omega_z','T'], locs=('final', 'initial'))
+
+
 
 IPOPT = True
 
@@ -100,26 +90,22 @@ IPOPT = True
 if IPOPT:
 	p.driver = om.pyOptSparseDriver(optimizer='IPOPT')
 
-	p.driver.opt_settings['mu_init'] = 1e-3
-	p.driver.opt_settings['max_iter'] = 1
-	p.driver.opt_settings['acceptable_tol'] = 1e-3
-	p.driver.opt_settings['constr_viol_tol'] = 1e-3
-	p.driver.opt_settings['compl_inf_tol'] = 1e-3
-	p.driver.opt_settings['acceptable_iter'] = 0
-	p.driver.opt_settings['tol'] = 1e-3
-	p.driver.opt_settings['hessian_approximation'] = 'exact'
-	p.driver.opt_settings['nlp_scaling_method'] = 'none'
+	# p.driver.opt_settings['mu_init'] = 1e-3
+	# p.driver.opt_settings['max_iter'] = 1
+	# p.driver.opt_settings['acceptable_tol'] = 1e-3
+	# p.driver.opt_settings['constr_viol_tol'] = 1e-3
+	# p.driver.opt_settings['compl_inf_tol'] = 1e-3
+	# p.driver.opt_settings['acceptable_iter'] = 0
+	# p.driver.opt_settings['tol'] = 1e-3
+	# p.driver.opt_settings['hessian_approximation'] = 'exact'
+	# p.driver.opt_settings['nlp_scaling_method'] = 'none'
 	p.driver.opt_settings['print_level'] = 5
+	p.driver.options['user_terminate_signal'] = None
 else:
 	p.driver = om.ScipyOptimizeDriver()
 
-# Allow OpenMDAO to automatically determine our sparsity pattern.
-# Doing so can significant speed up the execution of Dymos.
 p.driver.declare_coloring()
-
-# Setup the problem
 p.setup(check=True) #force_alloc_complex=True
-# Now that the OpenMDAO problem is setup, we can set the values of the states.
 
 #States
 p.set_val('traj.phase0.states:t',phase.interpolate(ys=[0.0,100.0], nodes='state_input'),units='s') #initial guess for what the final time should be
@@ -150,6 +136,7 @@ n = p.get_val('traj.phase0.timeseries.states:n')
 t = p.get_val('traj.phase0.timeseries.states:t')
 s = p.get_val('traj.phase0.timeseries.time')
 V = p.get_val('traj.phase0.timeseries.states:V')
+
 
 
 #Plotting

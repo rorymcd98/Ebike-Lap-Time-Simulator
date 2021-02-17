@@ -5,18 +5,17 @@ from scipy.sparse.linalg import gmres
 class linearSystem(om.ImplicitComponent):
     def initialize(self):
         self.options.declare('num_nodes', types=int)
-        self.out_guess = np.array((4,1))
+        self.out_guess = np.zeros((4,1))
 
     def setup(self):
         nn = self.options['num_nodes']
-        self.count = 1
 
         #constants
         self.add_input('M', val=300.0, desc='total mass', units='kg')
-        self.add_input('rt', val=0.1, desc='wheel toroid radius', units=None)
+        self.add_input('rt', val=0.1, desc='wheel toroid radius', units='m')
         self.add_input('rho', val=1.2, desc='air density', units='kg/m**3')
         self.add_input('Cd', val=0.41, desc='drag coefficient', units=None)
-        self.add_input('h', val=0.6, desc='CoG height', units=None)
+        self.add_input('h', val=0.6, desc='CoG height', units='m')
         self.add_input('g', val=9.81, desc='gravity', units='m/s**2')
         self.add_input('Cl', val=0.00, desc='lift coefficient', units=None)
         self.add_input('r', val=0.3, desc='wheel radius', units='m')
@@ -54,7 +53,7 @@ class linearSystem(om.ImplicitComponent):
         self.add_output('Phiddot', val=np.zeros(nn), desc='roll rate2', units='rad/s**2')
         self.add_output('zddot', val=np.zeros(nn), desc='vertical acceleration', units='m/s**2')
 
-        self.declare_coloring(wrt='*', method='cs', tol=1.0E-12, show_sparsity=True)
+        self.declare_coloring(wrt='*', method='cs', tol=1.0E-12)
 
     def apply_nonlinear(self, inputs, outputs, residuals):
         nn = self.options['num_nodes']
@@ -118,8 +117,6 @@ class linearSystem(om.ImplicitComponent):
 
 
     def solve_nonlinear(self, inputs, outputs):
-        self.count += 1
-        print(self.count)
         nn = self.options['num_nodes']
         M = inputs['M']*np.ones(nn)
         rt = inputs['rt']*np.ones(nn)
@@ -155,6 +152,8 @@ class linearSystem(om.ImplicitComponent):
         Fy = inputs['Fy']
         ndot = inputs['ndot']
         N = inputs['N']
+
+        print(k[0])
         
         A=np.array([[                                          M,                                                 np.zeros(nn),                   np.zeros(nn),                                                                                                                                                                                                                                                                                                       -M*V*np.sin(alpha + np.cos(alpha))*(nu*np.cos(alpha) - tau*np.sin(alpha))*(rt - z + np.cos(Phi)*(h - rt))],
         [                                    -Beta*M,                               M*np.cos(Phi)*(h - rt),                   np.zeros(nn),                                                                                                                                                                                                                                                                                                  M*V*np.sin(alpha + np.cos(alpha))*(tau*np.cos(alpha) + nu*np.sin(alpha))*(rt - z + np.cos(Phi)*(h - rt)) - M*V],

@@ -24,7 +24,7 @@ class tyreConstraint(om.ExplicitComponent):
         #outputs
         self.add_output('TC', val=np.zeros(nn), desc='tyre constraint', units=None)
 
-        self.declare_coloring(wrt='*', method='cs', tol=1.0E-12, show_sparsity=True)
+        self.declare_coloring(wrt='*', method='cs', tol=1.0E-12)
 
     def compute(self, inputs, outputs):
         mu_r = inputs['mu_r']
