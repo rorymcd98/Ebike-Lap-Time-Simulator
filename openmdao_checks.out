@@ -1,8 +1,4 @@
 INFO: checking out_of_order
-WARNING: The following systems are executed out-of-order:
-   System 'traj.phases.phase0.rhs_col.tracking' executes out-of-order with respect to its source systems ['traj.phases.phase0.rhs_col.curvature']
-   System 'traj.phases.phase0.rhs_disc.tracking' executes out-of-order with respect to its source systems ['traj.phases.phase0.rhs_disc.curvature']
-
 INFO: checking system
 INFO: checking solvers
 INFO: checking dup_inputs

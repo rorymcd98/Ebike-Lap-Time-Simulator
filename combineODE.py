@@ -9,7 +9,7 @@ from tyreODE import  tyre
 from curvature import curvature
 from timeAdder import TimeAdder
 from spinODE import spin
-from implicitSubstep.linearSystemGroup import linearSystem
+from linearSystem import linearSystem
 
 
 class combine(om.Group):
@@ -25,6 +25,16 @@ class combine(om.Group):
         self.add_subsystem(name='powerTrain',
                            subsys=powerTrain(num_nodes=nn),promotes_inputs=['e','T','omega_w','tau_t','V'],promotes_outputs=['edot','Tdot','im'])     
 
+        self.add_subsystem(name='curvature',
+                    subsys=curvature(num_nodes=nn),promotes_outputs=['k'])   
+        
+        #self.connect('curvature.k','spin.k')
+                
+        #self.connect('curvature.k',['spin.k','implicitOutputs.k','tracking.k'])
+        # self.connect('curvature.nu',['spin.nu','implicitOutputs.nu']) 
+        # self.connect('curvature.tau',['spin.tau','implicitOutputs.tau'])
+        # self.connect('curvature.sig',[           'implicitOutputs.sig'])  
+
         self.add_subsystem(name='tracking',
                            subsys=tracking(num_nodes=nn),promotes_inputs=['V','Beta','alpha','n','k','Omega_z'],promotes_outputs=['sdot','ndot','alphadot'])
 
@@ -34,22 +44,13 @@ class combine(om.Group):
         self.add_subsystem(name='tyreConstraint',
                            subsys=tyreConstraint(num_nodes=nn),promotes_inputs=['N','Fx','Fy'],promotes_outputs=['TC'])    
 
-        self.add_subsystem(name='curvature',
-                           subsys=curvature(num_nodes=nn),promotes_outputs=['k'])   
-
         #Solve equations 13 and 14
-        self.add_subsystem(name='implicitOutputs',
+        self.add_subsystem(name='linearSystem',
                            subsys=linearSystem(num_nodes=nn),promotes_inputs=['Phi','Phidot','Beta','alpha','alphadot','nu','tau','sig','V','n','k','z','zdot','sdot','Omega_z','Omegadot_z','Fx','Fy','omega_w','ndot','N'],
                            promotes_outputs=['Vdot','Betadot','Phiddot','zddot'])    
 
-        #self.connect('curvature.k','spin.k')
         self.add_subsystem(name='spin',subsys=spin(num_nodes=nn),promotes_inputs=['Phi','Phidot','Beta','Betadot','alpha','alphadot','nu','k','tau','V','Vdot','n','z','sdot','Omega_z','Omegadot_z','Fx','omega_w','tau_w','N','Fy'],
         promotes_outputs=['omegadot_w'])
-        
-        #self.connect('curvature.k',['spin.k','implicitOutputs.k','tracking.k'])
-        # self.connect('curvature.nu',['spin.nu','implicitOutputs.nu']) 
-        # self.connect('curvature.tau',['spin.tau','implicitOutputs.tau'])
-        # self.connect('curvature.sig',[           'implicitOutputs.sig'])  
 
         self.add_subsystem(name='timeSpace',
                     subsys=timeSpace(num_nodes=nn),promotes_inputs=['sdot','Phidot','Phiddot','ndot','alphadot','Vdot','Betadot','zdot','zddot','omegadot_w','Omegadot_z','Tdot','edot'],

@@ -153,7 +153,6 @@ class linearSystem(om.ImplicitComponent):
         ndot = inputs['ndot']
         N = inputs['N']
 
-        print(k[0])
         
         A=np.array([[                                          M,                                                 np.zeros(nn),                   np.zeros(nn),                                                                                                                                                                                                                                                                                                       -M*V*np.sin(alpha + np.cos(alpha))*(nu*np.cos(alpha) - tau*np.sin(alpha))*(rt - z + np.cos(Phi)*(h - rt))],
         [                                    -Beta*M,                               M*np.cos(Phi)*(h - rt),                   np.zeros(nn),                                                                                                                                                                                                                                                                                                  M*V*np.sin(alpha + np.cos(alpha))*(tau*np.cos(alpha) + nu*np.sin(alpha))*(rt - z + np.cos(Phi)*(h - rt)) - M*V],

@@ -4,6 +4,7 @@ import dymos as dm
 import matplotlib.pyplot as plt
 from combineODE import combine
 import matplotlib as mpl
+import os
 
 #track curvature imports
 from scipy import interpolate
@@ -76,7 +77,6 @@ phase.add_objective('t', loc='final') #note that we use the 'state' time instead
 
 #Add output timeseries
 #phase.add_timeseries_output('Phi',units='rad/s',shape=(1,))
-phase.add_timeseries_output('k',units='1/m',shape=(1,))
 
 #Link the states at the start and end of the phase in order to ensure a continous lap
 traj.link_phases(phases=['phase0', 'phase0'], vars=['Phi','Phidot','n','alpha','V','Beta','z','zdot','omega_w','Omega_z','T'], locs=('final', 'initial'))
@@ -105,6 +105,9 @@ else:
 	p.driver = om.ScipyOptimizeDriver()
 
 p.driver.declare_coloring()
+path = os.getcwd()
+coloring_path = path + '/coloring_files/total_coloring.pkl'
+#p.driver.use_fixed_coloring(coloring=coloring_path)
 p.setup(check=True) #force_alloc_complex=True
 
 #States
