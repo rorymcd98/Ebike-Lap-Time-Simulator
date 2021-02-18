@@ -24,7 +24,13 @@ class tyreConstraint(om.ExplicitComponent):
         #outputs
         self.add_output('TC', val=np.zeros(nn), desc='tyre constraint', units=None)
 
-        self.declare_coloring(wrt='*', method='cs', tol=1.0E-12)
+        # Setup partials
+        arange = np.arange(self.options['num_nodes'], dtype=int)
+
+        #partials
+        self.declare_partials(of='TC', wrt='N', rows=arange, cols=arange)
+        self.declare_partials(of='TC', wrt='Fx', rows=arange, cols=arange)
+        self.declare_partials(of='TC', wrt='Fy', rows=arange, cols=arange)
 
     def compute(self, inputs, outputs):
         mu_r = inputs['mu_r']
@@ -37,3 +43,17 @@ class tyreConstraint(om.ExplicitComponent):
         Fy = inputs['Fy']
 
         outputs['TC'] = (Fx/(N*mu_x))**2 + (Fy*(N*mu_y))**2
+
+    def compute_partials(self, inputs, jacobian):
+        mu_r = inputs['mu_r']
+        mu_x = inputs['mu_x']
+        mu_y = inputs['mu_y']
+        Ks = inputs['Ks']
+        Kc = inputs['Kc']
+        N = inputs['N']
+        Fx = inputs['Fx']
+        Fy = inputs['Fy']
+
+        jacobian['TC','N']=2*Fy**2*N*mu_y**2 - (2*Fx**2)/(N**3*mu_x**2)
+        jacobian['TC','Fx']=(2*Fx)/(N**2*mu_x**2)
+        jacobian['TC','Fy']=2*Fy*N**2*mu_y**2

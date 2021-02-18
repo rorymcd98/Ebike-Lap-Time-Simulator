@@ -17,7 +17,11 @@ class TimeAdder(om.ExplicitComponent):
         self.add_output('dt_ds', val=np.zeros(nn), desc='distance perpendicular to centerline', units='s/m')
 
 
-        self.declare_coloring(wrt='*', method='cs', tol=1.0E-12)
+        # Setup partials
+        arange = np.arange(self.options['num_nodes'], dtype=int)
+
+        #partials
+        self.declare_partials(of='dt_ds', wrt='sdot', rows=arange, cols=arange)
 
 
     def compute(self, inputs, outputs):
@@ -25,11 +29,10 @@ class TimeAdder(om.ExplicitComponent):
 
         outputs['dt_ds'] = 1/sdot
 
+    def compute_partials(self, inputs, jacobian):
+        sdot = inputs['sdot']
 
+        jacobian['dt_ds', 'sdot'] = -1/sdot**2
+        
 
-
-
-
-
-
-
+        

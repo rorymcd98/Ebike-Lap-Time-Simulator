@@ -33,8 +33,8 @@ class linearSystem(om.ImplicitComponent):
         self.add_input('Cl', val=0.00, desc='lift coefficient', units=None)
         self.add_input('r', val=0.3, desc='wheel radius', units='m')
         self.add_input('Ixx', val=19, desc='roll moment of inertia', units='kg*m**2')
-        self.add_input('Iyy', val=5, desc='pitch moment of inertia', units='kg*m**2') 
-        self.add_input('Izz', val=5, desc='yaw moment of inertia', units='kg*m**2')
+        self.add_input('Iyy', val=25, desc='pitch moment of inertia', units='kg*m**2') 
+        self.add_input('Izz', val=25, desc='yaw moment of inertia', units='kg*m**2')
         self.add_input('Igy', val=2.1, desc='gyroscopic moment of inertia', units='kg*m**2')
 
         #states
@@ -66,7 +66,7 @@ class linearSystem(om.ImplicitComponent):
         self.add_output('Phiddot', val=np.zeros(nn), desc='roll rate2', units='rad/s**2')
         self.add_output('zddot', val=np.zeros(nn), desc='vertical acceleration', units='m/s**2')
 
-        self.declare_coloring(wrt='*', method='cs', tol=1.0E-12)
+        self.declare_coloring(wrt='*', method='fd', tol=1.0E-12,show_sparsity=True)
 
     def apply_nonlinear(self, inputs, outputs, residuals):
         nn = self.options['num_nodes']

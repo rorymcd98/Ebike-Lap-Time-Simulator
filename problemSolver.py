@@ -14,10 +14,9 @@ import tracks
 from spline import getSpline,getTrackPoints,getGateNormals,reverseTransformGates,setGateDisplacements,transformGates
 from linewidthhelper import *
 
-print('Config: RWD single thrust')
-
+max_charge = 5e8
 track = tracks.ovaltrack #change track here and in curvature.py. Tracks are defined in tracks.py
-plot = False #plot track and telemetry
+plot = True #plot track and telemetry
 
 points = getTrackPoints(track) #generate nodes along the centerline for curvature calculation (different than collocation nodes)
 finespline,gates,gatesd,curv,slope = getSpline(points,s=0.0) #fit the centerline spline. by default 10000 points
@@ -43,34 +42,35 @@ phase.set_time_options(fix_initial=True,fix_duration=True,duration_val=s_final,t
 
 #Define states
 phase.add_state('t', fix_initial=True, fix_final=False, units='s', lower = 0,rate_source='dt_ds',ref=100) #time
-phase.add_state('Phi', fix_initial=False, fix_final=False, units='rad', rate_source='dPhi_ds',targets=['Phi'])
-phase.add_state('Phidot', fix_initial=False, fix_final=False, units='rad/s', rate_source='dPhidot_ds',targets=['Phidot'])
-phase.add_state('n', fix_initial=False, fix_final=False, units='m', upper = 4.0, lower = -4.0, rate_source='dn_ds',targets=['n'],ref=4.0) #normal distance to centerline. The bounds on n define the width of the track
-phase.add_state('alpha', fix_initial=False, fix_final=False, units='rad', rate_source='dalpha_ds',targets=['alpha'],ref=0.15) #vehicle heading angle with respect to centerline
-phase.add_state('V', fix_initial=False, fix_final=False, units='m/s', ref = 0.1, ref0=5,rate_source='dV_ds', targets=['V']) #velocity
-phase.add_state('Beta', fix_initial=False, fix_final=False, units='rad', rate_source='dBeta_ds',targets=['Beta'])
-phase.add_state('z', fix_initial=False, fix_final=False, units='m', rate_source='dz_ds',targets=['z'])
+phase.add_state('Phi', fix_initial=True, fix_final=False, units='rad', rate_source='dPhi_ds',targets=['Phi'])
+phase.add_state('Phidot', fix_initial=True, fix_final=False, units='rad/s', rate_source='dPhidot_ds',targets=['Phidot'])
+phase.add_state('n', fix_initial=True, fix_final=False, units='m', upper = 4.0, lower = -4.0, rate_source='dn_ds',targets=['n']) #normal distance to centerline. The bounds on n define the width of the track
+phase.add_state('alpha', fix_initial=True, fix_final=False, units='rad', rate_source='dalpha_ds',targets=['alpha']) #vehicle heading angle with respect to centerline
+phase.add_state('V', fix_initial=True, fix_final=False, units='m/s', ref = 20, ref0=5,rate_source='dV_ds', targets=['V']) #velocity
+phase.add_state('Beta', fix_initial=True, fix_final=False, units='rad', rate_source='dBeta_ds',targets=['Beta'])
+phase.add_state('z', fix_initial=True, fix_final=False, units='m', rate_source='dz_ds',targets=['z'])
 phase.add_state('zdot', fix_initial=False, fix_final=False, units='m/s', rate_source='dzdot_ds',targets=['zdot'])
-phase.add_state('omega_w', fix_initial=False, fix_final=False, units='rad/s', rate_source='domega_w_ds',targets=['omega_w'])
-phase.add_state('Omega_z', fix_initial=False, fix_final=False, units='rad/s', rate_source='dOmega_z_ds',targets=['Omega_z'])
-phase.add_state('T', fix_initial=False, fix_final=False, units='C', rate_source='dT_ds',targets=['T'])
-phase.add_state('e', fix_initial=True, fix_final=False, units='J', rate_source='de_ds',targets=['e'])
+phase.add_state('omega_w', fix_initial=True, fix_final=False, units='rad/s', rate_source='domega_w_ds',targets=['omega_w'])
+phase.add_state('Omega_z', fix_initial=True, fix_final=False, units='rad/s', rate_source='dOmega_z_ds',targets=['Omega_z'])
+#phase.add_state('T', fix_initial=True, fix_final=False, units='C', rate_source='dT_ds',targets=['T'])
+#phase.add_state('e', fix_initial=True, fix_final=False, units='J', rate_source='de_ds',targets=['e'])
 #Add lower = 0
 
 #Define Controls
-phase.add_control(name='Omegadot_z', units='rad/s**2', lower=None, upper=None,fix_initial=False,fix_final=False, targets=['Omegadot_z'],ref=0.04) #steering angle
+phase.add_control(name='Omegadot_z', units='rad/s**2', lower=None, upper=None,fix_initial=False,fix_final=False, targets=['Omegadot_z']) #steering angle
 phase.add_control(name='tau_t', lower=None, upper=None, units='N*m',fix_initial=False,fix_final=False, targets=['tau_t']) #the thrust controls the longitudinal force of the rear tires and is positive while accelerating, negative while braking
 phase.add_control(name='tau_b', lower=None, upper=None ,units='N*m',fix_initial=False,fix_final=False, targets=['tau_b'])
 
 #Physical Constraints
-phase.add_path_constraint('im',shape=(1,),units='A',lower=2,upper=160)#Max motor current
+phase.add_path_constraint('im',shape=(1,),units='A',lower=2,upper=130)#Max motor current
 phase.add_path_constraint('TC',shape=(1,),units=None,upper=1)#Max tyre constraint
-#phase.add_path_constraint('N',shape=(1,),units=None,lower=0)#Enforce positive load
+phase.add_path_constraint('edot',shape=(1,),units='W',lower=-80000)
+#phase.add_path_constraint('N',shape=(1,),units=None,lower=1e-5	)#Enforce positive load
 #Add max power
 
 
 #Some of the vehicle design parameters are available to set here. Other parameters can be found in their respective ODE files.
-phase.add_design_parameter('ei',val=50000.0,units='J',opt=False,targets=['powerTrain.ei'],dynamic=False) 
+phase.add_design_parameter('ei',val=max_charge,units='J',opt=False,targets=['powerTrain.ei'],dynamic=False) 
 
 #Minimize final time.
 phase.add_objective('t', loc='final') #note that we use the 'state' time instead of Dymos 'time'
@@ -79,8 +79,8 @@ phase.add_objective('t', loc='final') #note that we use the 'state' time instead
 #phase.add_timeseries_output('Phi',units='rad/s',shape=(1,))
 
 #Link the states at the start and end of the phase in order to ensure a continous lap
-traj.link_phases(phases=['phase0', 'phase0'], vars=['Phi','Phidot','n','alpha','V','Beta','z','zdot','omega_w','Omega_z','T'], locs=('final', 'initial'))
-
+#Truetraj.link_phases(phases=['phase0', 'phase0'], vars=['Phi','Phidot','n','alpha','V','Beta','z','zdot','omega_w','Omega_z','T'], locs=('final', 'initial'))
+#add back in T and e
 
 
 IPOPT = True
@@ -89,25 +89,26 @@ IPOPT = True
 
 if IPOPT:
 	p.driver = om.pyOptSparseDriver(optimizer='IPOPT')
-
-	# p.driver.opt_settings['mu_init'] = 1e-3
-	# p.driver.opt_settings['max_iter'] = 1
-	# p.driver.opt_settings['acceptable_tol'] = 1e-3
-	# p.driver.opt_settings['constr_viol_tol'] = 1e-3
-	# p.driver.opt_settings['compl_inf_tol'] = 1e-3
-	# p.driver.opt_settings['acceptable_iter'] = 0
-	# p.driver.opt_settings['tol'] = 1e-3
-	# p.driver.opt_settings['hessian_approximation'] = 'exact'
-	# p.driver.opt_settings['nlp_scaling_method'] = 'none'
+	p.driver.opt_settings['linear_solver'] = 'ma27'
+	p.driver.opt_settings['mu_init'] = 1e-3
+	p.driver.opt_settings['max_iter'] = 500
+	p.driver.opt_settings['acceptable_tol'] = 1e-3
+	p.driver.opt_settings['constr_viol_tol'] = 1e-3
+	p.driver.opt_settings['compl_inf_tol'] = 1e-3
+	p.driver.opt_settings['acceptable_iter'] = 0
+	p.driver.opt_settings['tol'] = 1e-3
+	p.driver.opt_settings['hessian_approximation'] = 'exact'
+	p.driver.opt_settings['nlp_scaling_method'] = 'none'
 	p.driver.opt_settings['print_level'] = 5
 	p.driver.options['user_terminate_signal'] = None
 else:
 	p.driver = om.ScipyOptimizeDriver()
 
-p.driver.declare_coloring()
+
 path = os.getcwd()
 coloring_path = path + '/coloring_files/total_coloring.pkl'
-#p.driver.use_fixed_coloring(coloring=coloring_path)
+p.driver.use_fixed_coloring(coloring=coloring_path)
+p.driver.declare_coloring()
 p.setup(check=True) #force_alloc_complex=True
 
 #States
@@ -116,14 +117,14 @@ p.set_val('traj.phase0.states:Phi',phase.interpolate(ys=[0.0,0.0], nodes='state_
 p.set_val('traj.phase0.states:Phidot',phase.interpolate(ys=[0.0,0.0], nodes='state_input'),units='rad/s')
 p.set_val('traj.phase0.states:n',phase.interpolate(ys=[0.0,0.0], nodes='state_input'),units='m')
 p.set_val('traj.phase0.states:alpha',phase.interpolate(ys=[0.0,0.0], nodes='state_input'),units='rad')
-p.set_val('traj.phase0.states:V',phase.interpolate(ys=[20,20], nodes='state_input'),units='m/s') #non-zero velocity in order to protect against 1/0 errors.
+p.set_val('traj.phase0.states:V',phase.interpolate(ys=[0.01,20], nodes='state_input'),units='m/s') #non-zero velocity in order to protect against 1/0 errors.
 p.set_val('traj.phase0.states:Beta',phase.interpolate(ys=[0.0,0.0], nodes='state_input'),units='rad')
-p.set_val('traj.phase0.states:z',phase.interpolate(ys=[0.1,0.1], nodes='state_input'),units='m')
+p.set_val('traj.phase0.states:z',phase.interpolate(ys=[0.05,0.05], nodes='state_input'),units='m')
 p.set_val('traj.phase0.states:zdot',phase.interpolate(ys=[0.1,0.1], nodes='state_input'),units='m/s')
 p.set_val('traj.phase0.states:omega_w',phase.interpolate(ys=[0.1,0.1], nodes='state_input'),units='rad/s')
 p.set_val('traj.phase0.states:Omega_z',phase.interpolate(ys=[0.0,0.0], nodes='state_input'),units='rad/s')
-p.set_val('traj.phase0.states:T',phase.interpolate(ys=[22,22], nodes='state_input'),units='C')
-p.set_val('traj.phase0.states:e',phase.interpolate(ys=[50000,0.0], nodes='state_input'),units='J')
+#p.set_val('traj.phase0.states:T',phase.interpolate(ys=[22,22], nodes='state_input'),units='C')
+#p.set_val('traj.phase0.states:e',phase.interpolate(ys=[max_charge,0.0], nodes='state_input'),units='J')
 
 #Controls
 p.set_val('traj.phase0.controls:Omegadot_z',phase.interpolate(ys=[0.1,0.1], nodes='control_input'),units='rad/s**2')
