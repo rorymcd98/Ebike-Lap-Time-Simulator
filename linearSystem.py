@@ -207,5 +207,3 @@ class linearSystem(om.ImplicitComponent):
             outputs['zddot'][node] = x[2]
             outputs['Betadot'][node] = x[3]
 
-        print(omega_w)
-
