@@ -43,18 +43,17 @@ phase.set_time_options(fix_initial=True,fix_duration=True,duration_val=s_final,t
 #Define states
 phase.add_state('t', fix_initial=True, fix_final=False, units='s', lower = 0,rate_source='dt_ds',ref=100) #time
 phase.add_state('Phi', fix_initial=True, fix_final=False, units='rad', rate_source='dPhi_ds',targets=['Phi'])
-phase.add_state('Phidot', fix_initial=True, fix_final=False, units='rad/s', rate_source='dPhidot_ds',targets=['Phidot'])
-phase.add_state('n', fix_initial=True, fix_final=False, units='m', upper = 4.0, lower = -4.0, rate_source='dn_ds',targets=['n']) #normal distance to centerline. The bounds on n define the width of the track
+phase.add_state('Phidot', lower = -1, upper = 1, fix_initial=True, fix_final=False, units='rad/s', rate_source='dPhidot_ds',targets=['Phidot'])
+phase.add_state('n', fix_initial=True, fix_final=False, units='m', lower = -4.0, upper = 4.0, rate_source='dn_ds',targets=['n']) #normal distance to centerline. The bounds on n define the width of the track
 phase.add_state('alpha', fix_initial=True, fix_final=False, units='rad', rate_source='dalpha_ds',targets=['alpha']) #vehicle heading angle with respect to centerline
 phase.add_state('V', fix_initial=True, fix_final=False, units='m/s', ref = 20, ref0=5,rate_source='dV_ds', targets=['V']) #velocity
 phase.add_state('Beta', fix_initial=True, fix_final=False, units='rad', rate_source='dBeta_ds',targets=['Beta'])
 phase.add_state('z', fix_initial=True, fix_final=False, units='m', rate_source='dz_ds',targets=['z'])
 phase.add_state('zdot', fix_initial=False, fix_final=False, units='m/s', rate_source='dzdot_ds',targets=['zdot'])
 phase.add_state('omega_w', fix_initial=True, fix_final=False, units='rad/s', rate_source='domega_w_ds',targets=['omega_w'])
-phase.add_state('Omega_z', fix_initial=True, fix_final=False, units='rad/s', rate_source='dOmega_z_ds',targets=['Omega_z'])
-#phase.add_state('T', fix_initial=True, fix_final=False, units='C', rate_source='dT_ds',targets=['T'])
-#phase.add_state('e', fix_initial=True, fix_final=False, units='J', rate_source='de_ds',targets=['e'])
-#Add lower = 0
+phase.add_state('Omega_z', lower = -1, upper = 1, fix_initial=True, fix_final=False, units='rad/s', rate_source='dOmega_z_ds',targets=['Omega_z'])
+phase.add_state('T', fix_initial=True, fix_final=False, units='C', rate_source='dT_ds',targets=['T'])
+phase.add_state('e', lower = 0, fix_initial=True, fix_final=False, units='J', rate_source='de_ds',targets=['e'])
 
 #Define Controls
 phase.add_control(name='Omegadot_z', units='rad/s**2', lower=None, upper=None,fix_initial=False,fix_final=False, targets=['Omegadot_z']) #steering angle
@@ -74,14 +73,6 @@ phase.add_design_parameter('ei',val=max_charge,units='J',opt=False,targets=['pow
 
 #Minimize final time.
 phase.add_objective('t', loc='final') #note that we use the 'state' time instead of Dymos 'time'
-
-#Add output timeseries
-#phase.add_timeseries_output('Phi',units='rad/s',shape=(1,))
-
-#Link the states at the start and end of the phase in order to ensure a continous lap
-#Truetraj.link_phases(phases=['phase0', 'phase0'], vars=['Phi','Phidot','n','alpha','V','Beta','z','zdot','omega_w','Omega_z','T'], locs=('final', 'initial'))
-#add back in T and e
-
 
 IPOPT = True
 
@@ -107,7 +98,7 @@ else:
 
 path = os.getcwd()
 coloring_path = path + '/coloring_files/total_coloring.pkl'
-p.driver.use_fixed_coloring(coloring=coloring_path)
+#p.driver.use_fixed_coloring(coloring=coloring_path)
 p.driver.declare_coloring()
 p.setup(check=True) #force_alloc_complex=True
 
@@ -123,8 +114,8 @@ p.set_val('traj.phase0.states:z',phase.interpolate(ys=[0.05,0.05], nodes='state_
 p.set_val('traj.phase0.states:zdot',phase.interpolate(ys=[0.1,0.1], nodes='state_input'),units='m/s')
 p.set_val('traj.phase0.states:omega_w',phase.interpolate(ys=[0.1,0.1], nodes='state_input'),units='rad/s')
 p.set_val('traj.phase0.states:Omega_z',phase.interpolate(ys=[0.0,0.0], nodes='state_input'),units='rad/s')
-#p.set_val('traj.phase0.states:T',phase.interpolate(ys=[22,22], nodes='state_input'),units='C')
-#p.set_val('traj.phase0.states:e',phase.interpolate(ys=[max_charge,0.0], nodes='state_input'),units='J')
+p.set_val('traj.phase0.states:T',phase.interpolate(ys=[22,22], nodes='state_input'),units='C')
+p.set_val('traj.phase0.states:e',phase.interpolate(ys=[max_charge,max_charge/2], nodes='state_input'),units='J')
 
 #Controls
 p.set_val('traj.phase0.controls:Omegadot_z',phase.interpolate(ys=[0.1,0.1], nodes='control_input'),units='rad/s**2')

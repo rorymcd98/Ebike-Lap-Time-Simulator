@@ -66,7 +66,7 @@ class linearSystem(om.ImplicitComponent):
         self.add_output('Phiddot', val=np.zeros(nn), desc='roll rate2', units='rad/s**2')
         self.add_output('zddot', val=np.zeros(nn), desc='vertical acceleration', units='m/s**2')
 
-        self.declare_coloring(wrt='*', method='fd', tol=1.0E-12,show_sparsity=True)
+        self.declare_coloring(wrt='*', method='cs', tol=1.0E-12,show_sparsity=True)
 
     def apply_nonlinear(self, inputs, outputs, residuals):
         nn = self.options['num_nodes']
@@ -206,4 +206,6 @@ class linearSystem(om.ImplicitComponent):
             outputs['Phiddot'][node] = x[1]
             outputs['zddot'][node] = x[2]
             outputs['Betadot'][node] = x[3]
+
+        print(omega_w)
 
