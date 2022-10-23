@@ -151,7 +151,7 @@ t = p.get_val('traj.phase0.timeseries.states:t')
 s = p.get_val('traj.phase0.timeseries.time')
 V = p.get_val('traj.phase0.timeseries.states:V')
 
-
+#Credit to github user pwmdebuck for these lap plotting tools
 #Plotting
 if plot:
 	print("Plotting")
