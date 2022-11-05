@@ -33,7 +33,7 @@ Here's one of the parameters we optimised, initial battery charge. Notice how ex
 
 ![Battery optimisation](https://i.imgur.com/mIZyujs.png)
 
-Here is one of the models for the vehicle on the track.
+Here is one of the models for the vehicle on the track (Omega - yaw rate, alpha - direction relative to track, n - distance from centerline, V/U - velocity components, r - radius from road section center). 
 
 ![Vehicle diagram](https://i.imgur.com/dVNA70V.png)
 
