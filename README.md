@@ -6,6 +6,7 @@ At the time Linux/Unix install was neccessary as although some solvers (e.g. IPO
 I was not great with specifying depencies but I believe you need (I can't remember which versions):
 
 OpenMDAO + Dymos, NumPy, Matplotlib, SciPy
+
 And a solver:  IPOPT (or another such as ma57)
 
 # Purpose of the tool
@@ -13,7 +14,7 @@ And a solver:  IPOPT (or another such as ma57)
 This tool was designed to simulate a vehicle to simultaneously find:
 
 1) Vehicle inputs to minimise laptime
-2) The vehicle parameters (battery weight and capacity, coolant flow rate and volume, gear ratio) to minimise laptop
+2) The vehicle parameters (battery weight and capacity, coolant flow rate and volume, gear ratio) to minimise laptime
 
 The combination of (1) and (2) I believe were something missing from the literature for electric vehicles - previously people ran simulations dozens of times to optimise one value at a time.
 
