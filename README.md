@@ -8,7 +8,7 @@ I was not great with specifying depencies but I believe you need (I can't rememb
 OpenMDAO + Dymos, NumPy, Matplotlib, SciPy
 And a solver:  IPOPT (or another such as ma57)
 
-#Purpose of the tool
+# Purpose of the tool
 
 This tool was designed to simulate a vehicle to simultaneously find:
 
@@ -19,7 +19,7 @@ The combination of (1) and (2) I believe were something missing from the literat
 
 The motivation for our team in particular was missing out on the 2020 Isle of Man TT Zero podium finish due to unoptimised gear ratios. As COVID was ongoing during this project, a simulation gave our team an excellent way to test the designs we were developing.
 
-#Cool diagrams
+# Cool diagrams
 
 Here is one of the main outputs of the tool - the acceleration and trajectory of the vehicle around the lap. Notice how we approach on the outside then hug the inside, and that we brake into corners then accelerate out. We have managed to find the optimal behaviour that real drivers use to maximise speed around corners. 
 
